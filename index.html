@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MatchMind – Sports Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#c8f53b',
+            dark: '#080c10',
+            card: '#111820',
+            border: '#1e2a38',
+          },
+          fontFamily: {
+            display: ['Bebas Neue', 'cursive'],
+            body: ['DM Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-dark text-white font-body min-h-screen">
+
+  <!-- SIDEBAR (desktop) -->
+  <aside class="fixed top-0 left-0 h-full w-64 bg-card border-r border-border flex flex-col z-50 hidden lg:flex">
+    <div class="p-6 border-b border-border">
+      <h1 class="font-display text-4xl text-primary tracking-wider">MATCH<span class="text-white">MIND</span></h1>
+      <p class="text-xs text-gray-500 mt-1">Sports Analysis Dashboard</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-1">
+      <button class="nav-btn active" data-section="search">
+        <span class="nav-icon">🔍</span> Search Teams
+      </button>
+      <button class="nav-btn" data-section="standings">
+        <span class="nav-icon">🏆</span> Standings
+      </button>
+      <button class="nav-btn" data-section="fixtures">
+        <span class="nav-icon">📅</span> Fixtures
+      </button>
+      <button class="nav-btn" data-section="h2h">
+        <span class="nav-icon">⚔️</span> Head to Head
+      </button>
+      <button class="nav-btn" data-section="favourites">
+        <span class="nav-icon">⭐</span> Favourites
+      </button>
+    </nav>
+    <div class="p-4 border-t border-border">
+      <p class="text-xs text-gray-600">Powered by TheSportsDB</p>
+    </div>
+  </aside>
+
+  <!-- MOBILE TOP BAR -->
+  <header class="lg:hidden fixed top-0 left-0 right-0 bg-card border-b border-border z-50 flex items-center px-4 py-3">
+    <h1 class="font-display text-3xl text-primary tracking-wider">MATCH<span class="text-white">MIND</span></h1>
+  </header>
+
+  <main class="lg:ml-64 pt-16 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
+
+    <!-- SEARCH -->
+    <section id="section-search" class="section active p-6 lg:p-10">
+      <div class="max-w-3xl">
+        <h2 class="font-display text-5xl lg:text-6xl text-white mb-2">FIND A <span class="text-primary">TEAM</span></h2>
+        <p class="text-gray-400 mb-8">Search any football team to view their profile, form, and fixtures.</p>
+        <div class="relative mb-8">
+          <input id="search-input" type="text" placeholder="e.g. Arsenal, Real Madrid, Bayern..."
+            class="w-full bg-card border border-border text-white placeholder-gray-600 rounded-xl px-5 py-4 pr-14 text-lg focus:outline-none focus:border-primary transition-colors" />
+          <button id="search-btn" class="absolute right-3 top-1/2 -translate-y-1/2 bg-primary text-dark font-semibold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity text-sm">GO</button>
+        </div>
+        <div id="search-loading" class="hidden text-center py-10">
+          <div class="spinner mx-auto mb-3"></div>
+          <p class="text-gray-500">Searching...</p>
+        </div>
+        <div id="search-results" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        <div id="search-empty" class="hidden text-center py-16">
+          <p class="text-5xl mb-4">⚽</p>
+          <p class="text-gray-500">No teams found. Try a different name.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM PROFILE -->
+    <section id="section-team" class="section p-6 lg:p-10 hidden">
+      <button id="back-btn" class="flex items-center gap-2 text-gray-400 hover:text-primary mb-6 transition-colors text-sm">← Back to Search</button>
+      <div id="team-header" class="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8 p-6 bg-card border border-border rounded-2xl"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-card border border-border rounded-2xl p-6">
+          <h3 class="font-display text-2xl text-primary mb-4">RECENT FORM</h3>
+          <div id="team-form" class="flex gap-2 flex-wrap"></div>
+          <div id="team-last-events" class="mt-4 space-y-2"></div>
+        </div>
+        <div class="bg-card border border-border rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display text-2xl text-primary">UPCOMING</h3>
+            <button id="fav-btn" class="text-sm px-3 py-1 rounded-full border border-border hover:border-primary hover:text-primary transition-all">⭐ Save</button>
+          </div>
+          <div id="team-next-events" class="space-y-2"></div>
+        </div>
+      </div>
+      <div class="mt-6 bg-card border border-border rounded-2xl p-6">
+        <h3 class="font-display text-2xl text-primary mb-3">ABOUT</h3>
+        <p id="team-desc-text" class="text-gray-400 text-sm leading-relaxed"></p>
+      </div>
+    </section>
+
+    <!-- STANDINGS -->
+    <section id="section-standings" class="section p-6 lg:p-10 hidden">
+      <h2 class="font-display text-5xl lg:text-6xl text-white mb-2">LEAGUE <span class="text-primary">STANDINGS</span></h2>
+      <p class="text-gray-400 mb-6">Live league tables fetched directly from TheSportsDB.</p>
+      <div class="flex flex-wrap gap-3 mb-8">
+        <button class="league-btn active" data-id="4328" data-season="2024-2025">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+        <button class="league-btn" data-id="4335" data-season="2024-2025">🇪🇸 La Liga</button>
+        <button class="league-btn" data-id="4331" data-season="2024-2025">🇩🇪 Bundesliga</button>
+        <button class="league-btn" data-id="4332" data-season="2024-2025">🇮🇹 Serie A</button>
+      </div>
+      <div id="standings-loading" class="hidden text-center py-10">
+        <div class="spinner mx-auto mb-3"></div>
+        <p class="text-gray-500">Fetching standings...</p>
+      </div>
+      <div id="standings-table" class="bg-card border border-border rounded-2xl overflow-hidden"></div>
+    </section>
+
+    <!-- FIXTURES -->
+    <section id="section-fixtures" class="section p-6 lg:p-10 hidden">
+      <h2 class="font-display text-5xl lg:text-6xl text-white mb-2">FIXTURES <span class="text-primary">BROWSER</span></h2>
+      <p class="text-gray-400 mb-6">Upcoming matches fetched live by league.</p>
+      <div class="flex flex-wrap gap-3 mb-8">
+        <button class="league-btn active" data-league-id="4328">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+        <button class="league-btn" data-league-id="4335">🇪🇸 La Liga</button>
+        <button class="league-btn" data-league-id="4331">🇩🇪 Bundesliga</button>
+        <button class="league-btn" data-league-id="4332">🇮🇹 Serie A</button>
+      </div>
+      <div id="fixtures-loading" class="hidden text-center py-10">
+        <div class="spinner mx-auto mb-3"></div>
+        <p class="text-gray-500">Loading fixtures...</p>
+      </div>
+      <div id="fixtures-list" class="space-y-3"></div>
+    </section>
+
+    <!-- HEAD TO HEAD -->
+    <section id="section-h2h" class="section p-6 lg:p-10 hidden">
+      <h2 class="font-display text-5xl lg:text-6xl text-white mb-2">HEAD <span class="text-primary">TO HEAD</span></h2>
+      <p class="text-gray-400 mb-8">Compare two teams' historical record — data pulled live from the API.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-widest mb-2 block">Team A</label>
+          <div class="relative">
+            <input id="h2h-team-a" type="text" placeholder="e.g. Arsenal"
+              class="w-full bg-card border border-border text-white placeholder-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors" />
+            <div id="h2h-results-a" class="h2h-dropdown absolute top-full left-0 right-0 bg-card border border-border rounded-xl mt-1 z-10 hidden max-h-52 overflow-y-auto"></div>
+          </div>
+          <div id="h2h-selected-a" class="mt-2"></div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 uppercase tracking-widest mb-2 block">Team B</label>
+          <div class="relative">
+            <input id="h2h-team-b" type="text" placeholder="e.g. Tottenham"
+              class="w-full bg-card border border-border text-white placeholder-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors" />
+            <div id="h2h-results-b" class="h2h-dropdown absolute top-full left-0 right-0 bg-card border border-border rounded-xl mt-1 z-10 hidden max-h-52 overflow-y-auto"></div>
+          </div>
+          <div id="h2h-selected-b" class="mt-2"></div>
+        </div>
+      </div>
+      <button id="h2h-compare-btn" class="bg-primary text-dark font-semibold px-8 py-3 rounded-xl hover:opacity-90 transition-opacity mb-8 disabled:opacity-40" disabled>Compare Teams</button>
+      <div id="h2h-loading" class="hidden text-center py-10">
+        <div class="spinner mx-auto mb-3"></div>
+        <p class="text-gray-500">Fetching matchups...</p>
+      </div>
+      <div id="h2h-results-display"></div>
+    </section>
+
+    <!-- FAVOURITES -->
+    <section id="section-favourites" class="section p-6 lg:p-10 hidden">
+      <h2 class="font-display text-5xl lg:text-6xl text-white mb-2">YOUR <span class="text-primary">FAVOURITES</span></h2>
+      <p class="text-gray-400 mb-8">Teams you have saved — stored locally and persistent across sessions.</p>
+      <div id="favourites-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div id="favourites-empty" class="hidden text-center py-16">
+        <p class="text-5xl mb-4">⭐</p>
+        <p class="text-gray-500">No favourites yet. Search for a team and save it!</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around z-50">
+    <button class="mobile-nav-btn active" data-section="search">🔍<span>Search</span></button>
+    <button class="mobile-nav-btn" data-section="standings">🏆<span>Standings</span></button>
+    <button class="mobile-nav-btn" data-section="fixtures">📅<span>Fixtures</span></button>
+    <button class="mobile-nav-btn" data-section="h2h">⚔️<span>H2H</span></button>
+    <button class="mobile-nav-btn" data-section="favourites">⭐<span>Favs</span></button>
+  </nav>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
